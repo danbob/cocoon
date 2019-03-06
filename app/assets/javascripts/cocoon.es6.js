@@ -19,7 +19,7 @@ class Cocoon {
 
     this.insertionFunc = options.insertionFunc || function(refNode, content) {
       refNode.insertAdjacentHTML('beforebegin', content)
-      return refNode.previousSibling
+      return refNode.previousElementSibling
     }
 
     this.beforeInsert = options.beforeInsert // function(html_string) { ...; returns html_string }, return false to cancel
