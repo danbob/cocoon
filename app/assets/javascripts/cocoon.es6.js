@@ -71,9 +71,10 @@ class Cocoon {
     this.afterRemove  = options.afterRemove
     // End options
 
-    var associations = `(?:${this.addFieldsLink.getAttribute('data-association')}|${this.addFieldsLink.getAttribute('data-associations')})`
-    this.regexId = new RegExp(`_new_${associations}_(\\w*)`, 'g')
-    this.regexParam = new RegExp(`\\[new_${associations}\\](.*?\\s)`, 'g')
+    // Build regexs to edit content of template later
+    var associationRegex = `(?:${this.addFieldsLink.getAttribute('data-associations')}|${this.addFieldsLink.getAttribute('data-association')})`
+    this.regexId = new RegExp(`_new_${associationRegex}_(\\w*)`, 'g')
+    this.regexParam = new RegExp(`\\[new_${associationRegex}\\](.*?\\s)`, 'g')
 
     this.insertionTemplate = this.addFieldsLink.getAttribute('data-association-insertion-template')
     this.elementCount = 0
