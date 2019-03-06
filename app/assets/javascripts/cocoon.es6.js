@@ -1,37 +1,81 @@
+// Usage:
+// import Cocoon from 'cocoon.es6'
+// new Cocoon(container, options)
+//
+// Parameters:
+// container (selector string|element)
+//   The container where new fields will be inserted
+//
+// options (object)
+//   May have the following members (all are optional if using the default markup):
+//
+//   addFieldsLink (selector string|element): link_to_add_association (default: '.add_fields' inside container)
+//
+//   addCount (integer): number of nested items to insert at once (default: 1)
+//
+//   removeWrapperClass (string): identifies the wrapper around inserted fields (default: 'nested-fields')
+//
+//   removeTimeout (integer): delay in milliseconds before removing items (default: 0)
+//
+//   insertionNode (selector string|element): nested fields are inserted relative to this element (default: parent node of addFieldsLink)
+//
+//   insertionFunction (function): function which inserts new fields (default: new fields are inserted immediately before addFieldsLink)
+//     parameters: <insertionNode (above)>, <html string to be inserted>
+//     return value: <inserted element> (only needed if you use afterInsert)
+//
+//   beforeInsert (function): runs before nested fields are inserted
+//     parameters: <html string>
+//     return value: <html string> or false
+//     Note: returning false cancels the insertion
+//
+//   afterInsert (function): runs after nested fields are inserted
+//     parameters: <inserted element>
+//     return value: none
+//
+//   beforeRemove (function): runs before nested fields are removed
+//     parameters: <element to be removed>
+//     return value: none
+//
+//   afterRemove (function): runs after nested fields are removed
+//     parameters: <removed element>
+//     return value: none
+
 class Cocoon {
   constructor(container, options={}) {
     this.container = this.getNodeFromOption(container, false)
+    if (!this.container)
+      throw new Error('Container selector string or element must be supplied')
 
-    if (!this.container) {
-      throw new TypeError('Container must be supplied')
-    }
-
+    // Start options
     this.addFieldsLink = this.getNodeFromOption(options.addFieldsLink, this.container.querySelector('.add_fields'))
-    this.removeWrapperClass = options.removeWrapperClass || 'nested-fields'
-
     if (!this.addFieldsLink)
-      console.warn('Cannot find the link to add fields. Make sure your `link_to_add_association` is correct.')
+      throw new Error('Cannot find link to add fields. Make sure your `addFieldsLink` option or `link_to_add_association` is correct.')
 
     this.insertionNode = this.getNodeFromOption(options.insertionNode, this.addFieldsLink.parentNode)
-
     if (!this.insertionNode)
-      console.warn('Cannot find the element to insert the template. Make sure your `insertionNode` option is correct.')
+      throw new Error('Cannot find the element to insert the template. Make sure your `insertionNode` option is correct.')
 
     this.insertionFunction = options.insertionFunction || function(refNode, content) {
       refNode.insertAdjacentHTML('beforebegin', content)
       return refNode.previousElementSibling
     }
 
-    this.beforeInsert  = options.beforeInsert // function(html_string) { ...; returns html_string }, return false to cancel
-    this.afterInsert   = options.afterInsert  // function(element) { ... }
-    this.beforeRemove  = options.beforeRemove // function(element) { ... }, return false to cancel
-    this.afterRemove   = options.afterRemove  // function(element) { ... }
-    this.removeTimeout = parseInt(options.removeTimeout) || 0
-    this.elementCount  = 0
+    this.removeWrapperClass = options.removeWrapperClass || 'nested-fields'
+    this.addCount           = Math.max(parseInt(options.addCount), 1) || 1
+    this.removeTimeout      = Math.max(parseInt(options.removeTimeout), 0) || 0
+
+    this.beforeInsert = options.beforeInsert
+    this.afterInsert  = options.afterInsert
+    this.beforeRemove = options.beforeRemove
+    this.afterRemove  = options.afterRemove
+    // End options
 
     var associations = `(?:${this.addFieldsLink.getAttribute('data-association')}|${this.addFieldsLink.getAttribute('data-associations')})`
     this.regexId = new RegExp(`_new_${associations}_(\\w*)`, 'g')
     this.regexParam = new RegExp(`\\[new_${associations}\\](.*?\\s)`, 'g')
+
+    this.insertionTemplate = this.addFieldsLink.getAttribute('data-association-insertion-template')
+    this.elementCount = 0
 
     this.attachEventListeners()
   }
@@ -56,35 +100,26 @@ class Cocoon {
   addFields(e) {
     e.preventDefault()
 
-    var link  = e.target,
-      content = link.getAttribute('data-association-insertion-template')
+    var html, newNode
 
-    var count = parseInt(link.getAttribute('data-count'), 10)
-    count = isNaN(count) ? 1 : Math.max(count, 1)
+    for (var i = 0; i++; i < this.addCount) {
+      html = this.replaceContent(this.insertionTemplate)
 
-    var newContents = []
-
-    while (count) {
-      newContents.push(this.replaceContent(content))
-      count -= 1
-    }
-
-    newContents.forEach((html) => {
       if (typeof this.beforeInsert == 'function')
         html = this.beforeInsert(html)
 
       if (!html)
         return
 
-      var newNode = this.insertionFunction(this.insertionNode, html)
+      newNode = this.insertionFunction(this.insertionNode, html)
 
       if (typeof this.afterInsert == 'function') {
         if (newNode instanceof HTMLElement)
           this.afterInsert(newNode)
         else
-          console.warn('Skipping `afterInsert`; please check that `insertionFunction` returns a DOM element')
+          throw new Error('Cannot run `afterInsert`, please check that your `insertionFunction` returns a DOM element')
       }
-    })
+    }
   }
 
   findNodeToRemove(el) {
