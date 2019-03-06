@@ -34,7 +34,8 @@
 //
 //   beforeRemove (function): runs before nested fields are removed
 //     parameters: <element to be removed>
-//     return value: none
+//     return value: none or false
+//     Note: returning false cancels the removal
 //
 //   afterRemove (function): runs after nested fields are removed
 //     parameters: <removed element>
