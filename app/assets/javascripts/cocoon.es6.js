@@ -29,7 +29,7 @@ class Cocoon {
     this.removeTimeout = parseInt(options.removeTimeout) || 0
     this.elementCount  = 0
 
-    var associations = `(${this.addFieldsLink.getAttribute('data-association')}|${this.addFieldsLink.getAttribute('data-associations')})`
+    var associations = `(?:${this.addFieldsLink.getAttribute('data-association')}|${this.addFieldsLink.getAttribute('data-associations')})`
     this.regexId = new RegExp(`_new_${associations}_(\\w*)`, 'g')
     this.regexParam = new RegExp(`\\[new_${associations}\\](.*?\\s)`, 'g')
 
