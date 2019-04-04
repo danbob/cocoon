@@ -121,7 +121,7 @@ class Cocoon {
         else
           throw new Error('Cannot run `afterInsert`, please check that your `insertionFunction` returns a DOM element')
       }
-    })
+    }
   }
 
   findNodeToRemove(el) {
