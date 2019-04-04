@@ -104,7 +104,7 @@ class Cocoon {
 
     var html, newNode
 
-    for (var i = 0; i++; i < this.addCount) {
+    for (var i = 0; i < this.addCount; i++) {
       html = this.replaceContent(this.insertionTemplate)
 
       if (typeof this.beforeInsert == 'function')
