@@ -121,7 +121,7 @@ class Cocoon {
         else
           throw new Error('Cannot run `afterInsert`, please check that your `insertionFunction` returns a DOM element')
       }
-    }
+    })
   }
 
   findNodeToRemove(el) {
@@ -158,7 +158,7 @@ class Cocoon {
       if (removeLink.classList.contains('dynamic'))
         container.removeChild(toRemove)
       else {
-        var input = toRemove.previousSibling
+        var input = removeLink.previousSibling
         if (input.matches('input[type="hidden"]'))
           input.value = '1'
 
