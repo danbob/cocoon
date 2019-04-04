@@ -104,7 +104,7 @@ class Cocoon {
 
     var html, newNode
 
-    for (var i = 0; i++; i < this.addCount) {
+    [...Array(this.addCount)].forEach(() => {
       html = this.replaceContent(this.insertionTemplate)
 
       if (typeof this.beforeInsert == 'function')
@@ -121,7 +121,7 @@ class Cocoon {
         else
           throw new Error('Cannot run `afterInsert`, please check that your `insertionFunction` returns a DOM element')
       }
-    }
+    })
   }
 
   findNodeToRemove(el) {
