@@ -179,9 +179,11 @@ class Cocoon {
         this.removeFields(e)
     })
 
+    var _this = this;
+
     var removeFunc = function() {
       [...document.querySelectorAll('.remove_fields.existing.destroyed')].forEach(function(el) {
-        var removed = this.findNodeToRemove(el)
+        var removed = _this.findNodeToRemove(el)
         removed.style.display = 'none'
       })
     }
